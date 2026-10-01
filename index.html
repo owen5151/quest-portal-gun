@@ -2,16 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Quest Controller Test</title>
-
+    <title>Quest Portal Gun</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-        }
+        body { margin: 0; overflow: hidden; }
     </style>
 </head>
-
 <body>
 
 <script type="module">
@@ -23,35 +18,36 @@ import { VRButton } from
 "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
 
 
+/* =========================
+   SCENE
+========================= */
+
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x202020);
 
-scene.background =
-    new THREE.Color(0x202020);
+const camera = new THREE.PerspectiveCamera(
+    70,
+    window.innerWidth / window.innerHeight,
+    0.01,
+    100
+);
 
-
-const camera =
-    new THREE.PerspectiveCamera(
-        70,
-        window.innerWidth / window.innerHeight,
-        0.01,
-        100
-    );
-
-
-const light =
-    new THREE.HemisphereLight(
-        0xffffff,
-        0x444444,
-        3
-    );
+const light = new THREE.HemisphereLight(
+    0xffffff,
+    0x444444,
+    3
+);
 
 scene.add(light);
 
 
-const renderer =
-    new THREE.WebGLRenderer({
-        antialias: true
-    });
+/* =========================
+   VR
+========================= */
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
 
 renderer.setSize(
     window.innerWidth,
@@ -60,39 +56,39 @@ renderer.setSize(
 
 renderer.xr.enabled = true;
 
-document.body.appendChild(
-    renderer.domElement
-);
+document.body.appendChild(renderer.domElement);
 
 document.body.appendChild(
     VRButton.createButton(renderer)
 );
 
 
-/* FLOOR */
+/* =========================
+   FLOOR
+========================= */
 
-const floor =
-    new THREE.Mesh(
-        new THREE.PlaneGeometry(10, 10),
-        new THREE.MeshStandardMaterial({
-            color: 0x555555
-        })
-    );
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(10, 10),
+    new THREE.MeshStandardMaterial({
+        color: 0x555555
+    })
+);
 
 floor.rotation.x = -Math.PI / 2;
 
 scene.add(floor);
 
 
-/* CUBE */
+/* =========================
+   TEST CUBE
+========================= */
 
-const cube =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(1, 1, 1),
-        new THREE.MeshStandardMaterial({
-            color: 0x00ff88
-        })
-    );
+const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshStandardMaterial({
+        color: 0x00ff88
+    })
+);
 
 cube.position.set(
     0,
@@ -103,7 +99,9 @@ cube.position.set(
 scene.add(cube);
 
 
-/* CONTROLLERS */
+/* =========================
+   CONTROLLERS
+========================= */
 
 const controller0 =
     renderer.xr.getController(0);
@@ -115,16 +113,17 @@ scene.add(controller0);
 scene.add(controller1);
 
 
-/* LASERS */
+/* =========================
+   CONTROLLER LASERS
+========================= */
 
 function addLaser(controller) {
 
     const geometry =
-        new THREE.BufferGeometry()
-            .setFromPoints([
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(0, 0, -1)
-            ]);
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0,0,0),
+            new THREE.Vector3(0,0,-1)
+        ]);
 
     const material =
         new THREE.LineBasicMaterial({
@@ -146,52 +145,228 @@ addLaser(controller0);
 addLaser(controller1);
 
 
-/*
-    TEMPORARY TEST
+/* =========================
+   PORTAL GUN
+========================= */
 
-    Either controller trigger
-    should change the cube.
-*/
+const gun = new THREE.Group();
+
+
+/* Main body */
+
+const body = new THREE.Mesh(
+    new THREE.BoxGeometry(
+        0.18,
+        0.22,
+        0.55
+    ),
+    new THREE.MeshStandardMaterial({
+        color: 0xe8e5d8
+    })
+);
+
+gun.add(body);
+
+
+/* Rounded-ish front barrel */
+
+const barrel = new THREE.Mesh(
+    new THREE.CylinderGeometry(
+        0.13,
+        0.16,
+        0.30,
+        16
+    ),
+    new THREE.MeshStandardMaterial({
+        color: 0xddddcc
+    })
+);
+
+barrel.rotation.x = Math.PI / 2;
+
+barrel.position.z = -0.38;
+
+gun.add(barrel);
+
+
+/* Dark barrel center */
+
+const barrelDark = new THREE.Mesh(
+    new THREE.CylinderGeometry(
+        0.075,
+        0.075,
+        0.32,
+        16
+    ),
+    new THREE.MeshStandardMaterial({
+        color: 0x333333
+    })
+);
+
+barrelDark.rotation.x = Math.PI / 2;
+
+barrelDark.position.z = -0.39;
+
+gun.add(barrelDark);
+
+
+/* Blue energy ring */
+
+const blueRing = new THREE.Mesh(
+    new THREE.TorusGeometry(
+        0.09,
+        0.025,
+        8,
+        24
+    ),
+    new THREE.MeshStandardMaterial({
+        color: 0x00aaff,
+        emissive: 0x0066ff,
+        emissiveIntensity: 3
+    })
+);
+
+blueRing.rotation.x = Math.PI / 2;
+
+blueRing.position.z = -0.56;
+
+gun.add(blueRing);
+
+
+/* Grip */
+
+const grip = new THREE.Mesh(
+    new THREE.BoxGeometry(
+        0.15,
+        0.35,
+        0.16
+    ),
+    new THREE.MeshStandardMaterial({
+        color: 0x333333
+    })
+);
+
+grip.position.set(
+    0,
+    -0.25,
+    0.05
+);
+
+grip.rotation.x = -0.18;
+
+gun.add(grip);
+
+
+/* Orange energy button */
+
+const orange = new THREE.Mesh(
+    new THREE.SphereGeometry(
+        0.045,
+        12,
+        12
+    ),
+    new THREE.MeshStandardMaterial({
+        color: 0xff6600,
+        emissive: 0xff3300,
+        emissiveIntensity: 2
+    })
+);
+
+orange.position.set(
+    0,
+    0.04,
+    -0.22
+);
+
+gun.add(orange);
+
+
+/* =========================
+   PUT GUN IN RIGHT HAND
+========================= */
+
+controller1.add(gun);
+
+
+/* Position gun in controller */
+
+gun.position.set(
+    0,
+    -0.05,
+    -0.12
+);
+
+
+/* Rotate it so it points forward */
+
+gun.rotation.set(
+    0,
+    0,
+    0
+);
+
+
+/* =========================
+   TRIGGERS
+========================= */
 
 controller0.addEventListener(
     "selectstart",
     () => {
-        cube.material.color.set(0xff0000);
-    }
-);
 
-controller1.addEventListener(
-    "selectstart",
-    () => {
-        cube.material.color.set(0xff0000);
-    }
-);
-
-controller0.addEventListener(
-    "selectend",
-    () => {
-        cube.material.color.set(0x00ff88);
-    }
-);
-
-controller1.addEventListener(
-    "selectend",
-    () => {
-        cube.material.color.set(0x00ff88);
-    }
-);
-
-
-/* RENDER */
-
-renderer.setAnimationLoop(
-    () => {
-        renderer.render(
-            scene,
-            camera
+        cube.material.color.set(
+            0xff0000
         );
+
     }
 );
+
+controller1.addEventListener(
+    "selectstart",
+    () => {
+
+        cube.material.color.set(
+            0xff0000
+        );
+
+    }
+);
+
+controller0.addEventListener(
+    "selectend",
+    () => {
+
+        cube.material.color.set(
+            0x00ff88
+        );
+
+    }
+);
+
+controller1.addEventListener(
+    "selectend",
+    () => {
+
+        cube.material.color.set(
+            0x00ff88
+        );
+
+    }
+);
+
+
+/* =========================
+   RENDER
+========================= */
+
+renderer.setAnimationLoop(() => {
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+});
 
 </script>
 
