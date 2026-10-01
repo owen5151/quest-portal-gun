@@ -1,14 +1,310 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Quest Portal Gun</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Quest Portal Gun</title>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+
+        #enterVR {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            padding: 20px 30px;
+            font-size: 22px;
+
+            z-index: 10;
+        }
+    </style>
 </head>
 
 <body>
 
-<h1>My Portal Gun</h1>
+<button id="enterVR">
+    ENTER VR
+</button>
 
-<p>If you can see this on your Quest, it works!</p>
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+import { VRButton } from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
+
+
+/* =========================
+   SCENE
+========================= */
+
+const scene = new THREE.Scene();
+
+scene.background =
+    new THREE.Color(0x202020);
+
+
+/* =========================
+   CAMERA
+========================= */
+
+const camera =
+    new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth /
+        window.innerHeight,
+        0.01,
+        100
+    );
+
+
+/* =========================
+   LIGHT
+========================= */
+
+const light =
+    new THREE.HemisphereLight(
+        0xffffff,
+        0x444444,
+        3
+    );
+
+scene.add(light);
+
+
+/* =========================
+   RENDERER
+========================= */
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+renderer.setPixelRatio(
+    window.devicePixelRatio
+);
+
+renderer.xr.enabled = true;
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+/* =========================
+   VR BUTTON
+========================= */
+
+document.body.appendChild(
+    VRButton.createButton(renderer)
+);
+
+
+/* =========================
+   FLOOR
+========================= */
+
+const floor =
+    new THREE.Mesh(
+
+        new THREE.PlaneGeometry(
+            10,
+            10
+        ),
+
+        new THREE.MeshStandardMaterial({
+            color: 0x555555
+        })
+
+    );
+
+floor.rotation.x =
+    -Math.PI / 2;
+
+scene.add(floor);
+
+
+/* =========================
+   CUBE
+========================= */
+
+const cube =
+    new THREE.Mesh(
+
+        new THREE.BoxGeometry(
+            1,
+            1,
+            1
+        ),
+
+        new THREE.MeshStandardMaterial({
+            color: 0x00ff88
+        })
+
+    );
+
+cube.position.set(
+    0,
+    0.5,
+    -3
+);
+
+scene.add(cube);
+
+
+/* =========================
+   CONTROLLERS
+========================= */
+
+const rightController =
+    renderer.xr.getController(0);
+
+const leftController =
+    renderer.xr.getController(1);
+
+scene.add(
+    rightController
+);
+
+scene.add(
+    leftController
+);
+
+
+/* =========================
+   CONTROLLER RAYS
+========================= */
+
+const rayGeometry =
+    new THREE.BufferGeometry()
+        .setFromPoints([
+
+            new THREE.Vector3(
+                0,
+                0,
+                0
+            ),
+
+            new THREE.Vector3(
+                0,
+                0,
+                -1
+            )
+
+        ]);
+
+const rayMaterial =
+    new THREE.LineBasicMaterial({
+        color: 0xffffff
+    });
+
+
+const rightRay =
+    new THREE.Line(
+        rayGeometry,
+        rayMaterial
+    );
+
+rightRay.scale.z = 5;
+
+rightController.add(
+    rightRay
+);
+
+
+const leftRay =
+    new THREE.Line(
+        rayGeometry.clone(),
+        rayMaterial
+    );
+
+leftRay.scale.z = 5;
+
+leftController.add(
+    leftRay
+);
+
+
+/* =========================
+   CONTROLLER BUTTON
+========================= */
+
+rightController.addEventListener(
+    "selectstart",
+    () => {
+
+        cube.material.color.set(
+            0xff0000
+        );
+
+    }
+);
+
+rightController.addEventListener(
+    "selectend",
+    () => {
+
+        cube.material.color.set(
+            0x00ff88
+        );
+
+    }
+);
+
+
+/* =========================
+   RESIZE
+========================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);
+
+
+/* =========================
+   RENDER
+========================= */
+
+renderer.setAnimationLoop(
+    () => {
+
+        renderer.render(
+            scene,
+            camera
+        );
+
+    }
+);
+
+</script>
 
 </body>
 </html>
