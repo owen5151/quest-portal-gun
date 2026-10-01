@@ -2,7 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Rick Style Portal Gun</title>
+    <title>C-137 Portal Gun</title>
+
     <style>
         body {
             margin: 0;
@@ -22,9 +23,9 @@ import { VRButton } from
 "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
 
 
-/* =========================
+/* =====================================================
    SCENE
-========================= */
+===================================================== */
 
 const scene = new THREE.Scene();
 
@@ -32,17 +33,18 @@ scene.background =
     new THREE.Color(0x202020);
 
 
-const camera = new THREE.PerspectiveCamera(
-    70,
-    window.innerWidth / window.innerHeight,
-    0.01,
-    100
-);
+const camera =
+    new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        0.01,
+        100
+    );
 
 
-/* =========================
+/* =====================================================
    LIGHT
-========================= */
+===================================================== */
 
 const light =
     new THREE.HemisphereLight(
@@ -54,9 +56,9 @@ const light =
 scene.add(light);
 
 
-/* =========================
+/* =====================================================
    VR
-========================= */
+===================================================== */
 
 const renderer =
     new THREE.WebGLRenderer({
@@ -79,9 +81,9 @@ document.body.appendChild(
 );
 
 
-/* =========================
+/* =====================================================
    FLOOR
-========================= */
+===================================================== */
 
 const floor =
     new THREE.Mesh(
@@ -97,9 +99,9 @@ floor.rotation.x =
 scene.add(floor);
 
 
-/* =========================
+/* =====================================================
    TEST CUBE
-========================= */
+===================================================== */
 
 const cube =
     new THREE.Mesh(
@@ -122,9 +124,9 @@ cube.position.set(
 scene.add(cube);
 
 
-/* =========================
+/* =====================================================
    CONTROLLERS
-========================= */
+===================================================== */
 
 const controller0 =
     renderer.xr.getController(0);
@@ -136,9 +138,9 @@ scene.add(controller0);
 scene.add(controller1);
 
 
-/* =========================
-   LASERS
-========================= */
+/* =====================================================
+   CONTROLLER LASERS
+===================================================== */
 
 function addLaser(controller) {
 
@@ -169,294 +171,397 @@ addLaser(controller0);
 addLaser(controller1);
 
 
-/* ==================================================
-   RICK-STYLE PORTAL GUN
-================================================== */
+/* =====================================================
+   PORTAL GUN
+===================================================== */
 
 const gun =
     new THREE.Group();
 
 
-/* =========================
+/* =====================================================
    MAIN BODY
-========================= */
+===================================================== */
+
+const bodyShape =
+    new THREE.Shape();
+
+bodyShape.moveTo(-0.09, 0.00);
+bodyShape.lineTo(-0.07, 0.075);
+bodyShape.lineTo(0.085, 0.075);
+bodyShape.lineTo(0.10, 0.045);
+bodyShape.lineTo(0.095, -0.015);
+bodyShape.lineTo(0.055, -0.045);
+bodyShape.lineTo(-0.02, -0.045);
+bodyShape.lineTo(-0.065, -0.015);
+bodyShape.closePath();
+
+
+const bodyGeometry =
+    new THREE.ExtrudeGeometry(
+        bodyShape,
+        {
+            depth: 0.30,
+            bevelEnabled: true,
+            bevelSegments: 2,
+            bevelSize: 0.008,
+            bevelThickness: 0.008
+        }
+    );
+
+bodyGeometry.center();
+
 
 const body =
     new THREE.Mesh(
-        new THREE.BoxGeometry(
-            0.11,
-            0.13,
-            0.34
-        ),
+        bodyGeometry,
         new THREE.MeshStandardMaterial({
-            color: 0xd8d2bd,
-            roughness: 0.8
+            color: 0xd7d7cf,
+            roughness: 0.7,
+            metalness: 0.15
         })
     );
 
 gun.add(body);
 
 
-/* =========================
-   TOP REAR HOUSING
-========================= */
+/* =====================================================
+   HANDLE
+===================================================== */
 
-const topHousing =
+const handleShape =
+    new THREE.Shape();
+
+handleShape.moveTo(-0.035, 0.01);
+handleShape.lineTo(0.035, 0.00);
+handleShape.lineTo(0.025, -0.08);
+handleShape.lineTo(0.01, -0.17);
+handleShape.lineTo(-0.015, -0.205);
+handleShape.lineTo(-0.045, -0.19);
+handleShape.lineTo(-0.055, -0.15);
+handleShape.lineTo(-0.04, -0.08);
+handleShape.closePath();
+
+
+const handleGeometry =
+    new THREE.ExtrudeGeometry(
+        handleShape,
+        {
+            depth: 0.105,
+            bevelEnabled: true,
+            bevelSegments: 2,
+            bevelSize: 0.01,
+            bevelThickness: 0.008
+        }
+    );
+
+handleGeometry.center();
+
+
+const handle =
     new THREE.Mesh(
-        new THREE.BoxGeometry(
-            0.13,
-            0.07,
-            0.18
-        ),
+        handleGeometry,
         new THREE.MeshStandardMaterial({
-            color: 0xaaa48f
+            color: 0x8b8b83,
+            roughness: 0.75,
+            metalness: 0.1
         })
     );
 
-topHousing.position.set(
-    0,
-    0.09,
-    0.04
+handle.position.set(
+    -0.005,
+    -0.09,
+    0
 );
 
-gun.add(topHousing);
+gun.add(handle);
 
 
-/* =========================
-   FRONT EMITTER
-========================= */
+/* =====================================================
+   BLACK CONTROL DIAL
+===================================================== */
 
-const emitter =
+const dial =
     new THREE.Mesh(
         new THREE.CylinderGeometry(
-            0.075,
-            0.095,
-            0.18,
-            16
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0xbcb6a4
-        })
-    );
-
-emitter.rotation.x =
-    Math.PI / 2;
-
-emitter.position.z =
-    -0.25;
-
-gun.add(emitter);
-
-
-/* =========================
-   DARK INNER BARREL
-========================= */
-
-const innerBarrel =
-    new THREE.Mesh(
-        new THREE.CylinderGeometry(
-            0.042,
-            0.042,
-            0.19,
-            16
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x292929
-        })
-    );
-
-innerBarrel.rotation.x =
-    Math.PI / 2;
-
-innerBarrel.position.z =
-    -0.26;
-
-gun.add(innerBarrel);
-
-
-/* =========================
-   ENERGY RING
-========================= */
-
-const energyRing =
-    new THREE.Mesh(
-        new THREE.TorusGeometry(
-            0.058,
-            0.012,
-            8,
+            0.032,
+            0.032,
+            0.018,
             20
         ),
         new THREE.MeshStandardMaterial({
-            color: 0x00aaff,
-            emissive: 0x0088ff,
-            emissiveIntensity: 3
+            color: 0x171717,
+            roughness: 0.5
         })
     );
 
-energyRing.rotation.x =
+dial.rotation.x =
     Math.PI / 2;
 
-energyRing.position.z =
-    -0.355;
-
-gun.add(energyRing);
-
-
-/* =========================
-   GRIP
-========================= */
-
-const grip =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(
-            0.095,
-            0.23,
-            0.105
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x3b342c
-        })
-    );
-
-grip.position.set(
-    0,
-    -0.16,
-    0.035
-);
-
-grip.rotation.x =
-    -0.15;
-
-gun.add(grip);
-
-
-/* =========================
-   GRIP END
-========================= */
-
-const gripBottom =
-    new THREE.Mesh(
-        new THREE.SphereGeometry(
-            0.055,
-            12,
-            8
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x292929
-        })
-    );
-
-gripBottom.position.set(
-    0,
-    -0.28,
-    0.01
-);
-
-gun.add(gripBottom);
-
-
-/* =========================
-   SIDE MECHANICAL PART
-========================= */
-
-const sidePart =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(
-            0.025,
-            0.07,
-            0.16
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x383838
-        })
-    );
-
-sidePart.position.set(
-    0.065,
-    0.01,
-    -0.02
-);
-
-gun.add(sidePart);
-
-
-/* =========================
-   ORANGE ENERGY LIGHT
-========================= */
-
-const orangeLight =
-    new THREE.Mesh(
-        new THREE.SphereGeometry(
-            0.025,
-            10,
-            10
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0xff6600,
-            emissive: 0xff3300,
-            emissiveIntensity: 3
-        })
-    );
-
-orangeLight.position.set(
-    0,
-    0.025,
+dial.position.set(
+    -0.055,
+    0.035,
     -0.17
 );
 
-gun.add(orangeLight);
+gun.add(dial);
 
 
-/* =========================
-   SMALL TOP BUTTON
-========================= */
+/* =====================================================
+   RED C-137 DISPLAY
+===================================================== */
 
-const button =
+const display =
     new THREE.Mesh(
-        new THREE.CylinderGeometry(
-            0.018,
-            0.018,
-            0.025,
-            10
+        new THREE.BoxGeometry(
+            0.075,
+            0.035,
+            0.008
         ),
         new THREE.MeshStandardMaterial({
-            color: 0x777777
+            color: 0x5c1010,
+            emissive: 0x330000,
+            emissiveIntensity: 1
         })
     );
 
-button.rotation.z =
-    Math.PI / 2;
-
-button.position.set(
-    0,
-    0.125,
-    0.02
+display.position.set(
+    0.025,
+    0.038,
+    -0.17
 );
 
-gun.add(button);
+gun.add(display);
 
 
-/* ==================================================
-   ATTACH TO RIGHT CONTROLLER
-================================================== */
+/* =====================================================
+   C-137 TEXT
+===================================================== */
+
+const canvas =
+    document.createElement("canvas");
+
+canvas.width = 256;
+canvas.height = 128;
+
+const ctx =
+    canvas.getContext("2d");
+
+ctx.fillStyle = "#220000";
+ctx.fillRect(
+    0,
+    0,
+    256,
+    128
+);
+
+ctx.fillStyle = "#ff4444";
+
+ctx.font =
+    "bold 70px Arial";
+
+ctx.textAlign =
+    "center";
+
+ctx.textBaseline =
+    "middle";
+
+ctx.fillText(
+    "C-137",
+    128,
+    64
+);
+
+
+const textTexture =
+    new THREE.CanvasTexture(canvas);
+
+
+const textMesh =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            0.065,
+            0.032
+        ),
+        new THREE.MeshBasicMaterial({
+            map: textTexture,
+            transparent: true
+        })
+    );
+
+textMesh.position.set(
+    0.025,
+    0.038,
+    -0.176
+);
+
+gun.add(textMesh);
+
+
+/* =====================================================
+   FLUID RESERVOIR BASE
+===================================================== */
+
+const reservoirBase =
+    new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            0.052,
+            0.058,
+            0.025,
+            24
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0xbcbcb4,
+            metalness: 0.4,
+            roughness: 0.5
+        })
+    );
+
+reservoirBase.position.set(
+    0.035,
+    0.11,
+    0
+);
+
+gun.add(reservoirBase);
+
+
+/* =====================================================
+   GLASS DOME
+===================================================== */
+
+const glass =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            0.065,
+            20,
+            16,
+            0,
+            Math.PI * 2,
+            0,
+            Math.PI / 2
+        ),
+        new THREE.MeshPhysicalMaterial({
+            color: 0x99ffcc,
+            transparent: true,
+            opacity: 0.28,
+            roughness: 0.05,
+            transmission: 0.2,
+            depthWrite: false
+        })
+    );
+
+glass.position.set(
+    0.035,
+    0.125,
+    0
+);
+
+gun.add(glass);
+
+
+/* =====================================================
+   GREEN PORTAL FLUID
+===================================================== */
+
+const fluid =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            0.053,
+            16,
+            12
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x39ff52,
+            emissive: 0x0aff22,
+            emissiveIntensity: 2.5,
+            transparent: true,
+            opacity: 0.88
+        })
+    );
+
+fluid.position.set(
+    0.035,
+    0.13,
+    0
+);
+
+fluid.scale.y =
+    0.75;
+
+gun.add(fluid);
+
+
+/* =====================================================
+   FLUID BUBBLES
+===================================================== */
+
+const bubbles = [];
+
+for (let i = 0; i < 6; i++) {
+
+    const bubble =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.006 + Math.random() * 0.005,
+                8,
+                8
+            ),
+            new THREE.MeshBasicMaterial({
+                color: 0xbaffc0,
+                transparent: true,
+                opacity: 0.8
+            })
+        );
+
+    bubble.position.set(
+        0.035 +
+        (Math.random() - 0.5) * 0.065,
+
+        0.105 +
+        Math.random() * 0.06,
+
+        (Math.random() - 0.5) * 0.045
+    );
+
+    gun.add(bubble);
+
+    bubbles.push(bubble);
+}
+
+
+/* =====================================================
+   ATTACH GUN TO RIGHT CONTROLLER
+===================================================== */
 
 controller1.add(gun);
 
 
-/* =========================
-   GUN POSITION
-========================= */
+/* =====================================================
+   SIZE
+===================================================== */
 
-gun.position.set(
-    0,
-    -0.015,
-    -0.075
+gun.scale.set(
+    0.62,
+    0.62,
+    0.62
 );
 
 
-/* =========================
-   GUN ROTATION
-========================= */
+/* =====================================================
+   POSITION
+===================================================== */
+
+gun.position.set(
+    0,
+    -0.025,
+    -0.08
+);
+
+
+/* =====================================================
+   ROTATION
+===================================================== */
 
 gun.rotation.set(
     0,
@@ -465,20 +570,9 @@ gun.rotation.set(
 );
 
 
-/* =========================
-   GUN SIZE
-========================= */
-
-gun.scale.set(
-    0.72,
-    0.72,
-    0.72
-);
-
-
-/* ==================================================
-   BOTH CONTROLLERS
-================================================== */
+/* =====================================================
+   TRIGGERS
+===================================================== */
 
 controller0.addEventListener(
     "selectstart",
@@ -490,7 +584,6 @@ controller0.addEventListener(
 
     }
 );
-
 
 controller1.addEventListener(
     "selectstart",
@@ -503,7 +596,6 @@ controller1.addEventListener(
     }
 );
 
-
 controller0.addEventListener(
     "selectend",
     () => {
@@ -514,7 +606,6 @@ controller0.addEventListener(
 
     }
 );
-
 
 controller1.addEventListener(
     "selectend",
@@ -528,12 +619,50 @@ controller1.addEventListener(
 );
 
 
-/* =========================
-   RENDER LOOP
-========================= */
+/* =====================================================
+   ANIMATION
+===================================================== */
+
+let time = 0;
 
 renderer.setAnimationLoop(
     () => {
+
+        time += 0.03;
+
+
+        /* Animate portal fluid */
+
+        fluid.scale.y =
+            0.75 +
+            Math.sin(time * 2) * 0.05;
+
+
+        fluid.rotation.y += 0.01;
+
+
+        /* Animate bubbles */
+
+        for (
+            let i = 0;
+            i < bubbles.length;
+            i++
+        ) {
+
+            bubbles[i].position.y +=
+                0.0008;
+
+            if (
+                bubbles[i].position.y >
+                0.175
+            ) {
+
+                bubbles[i].position.y =
+                    0.105;
+
+            }
+        }
+
 
         renderer.render(
             scene,
