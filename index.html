@@ -1,142 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Season 1 C-137 Portal Gun</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>C-137 Portal Gun VR</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050805}
+canvas{display:block}
+#info{
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);
+  z-index:10;color:#fff;font:14px Arial,sans-serif;
+  background:rgba(0,0,0,.55);padding:8px 12px;border-radius:8px;
+  pointer-events:none
+}
+</style>
 </head>
-
 <body>
+<div id="info">C-137 PORTAL GUN • Enter VR • Right trigger to test</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
 
 <script type="module">
-
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-
-import { VRButton } from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
-
-
-/* =====================================================
-   SCENE
-===================================================== */
+import * as THREE from "three";
+import { VRButton } from "three/addons/webxr/VRButton.js";
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x202020);
+scene.background = new THREE.Color(0x050805);
 
 const camera = new THREE.PerspectiveCamera(
-    70,
-    window.innerWidth / window.innerHeight,
-    0.01,
-    100
+  70,
+  window.innerWidth / window.innerHeight,
+  0.01,
+  100
 );
+camera.position.set(0,1.6,2.4);
 
-
-/* =====================================================
-   LIGHT
-===================================================== */
-
-scene.add(
-    new THREE.HemisphereLight(
-        0xffffff,
-        0x444444,
-        3
-    )
-);
-
-
-/* =====================================================
-   VR
-===================================================== */
-
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
-
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
-
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.xr.enabled = true;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
 
 document.body.appendChild(renderer.domElement);
-document.body.appendChild(
-    VRButton.createButton(renderer)
-);
+document.body.appendChild(VRButton.createButton(renderer));
 
+/* ---------- LIGHTING ---------- */
 
-/* =====================================================
-   FLOOR
-===================================================== */
+scene.add(new THREE.HemisphereLight(0xb8ffcc,0x101010,1.8));
+
+const keyLight = new THREE.PointLight(0xffffff,4,5);
+keyLight.position.set(0,2,1);
+scene.add(keyLight);
+
+const greenLight = new THREE.PointLight(0x25ff55,2.5,2);
+greenLight.position.set(0,1.5,0);
+scene.add(greenLight);
+
+/* ---------- FLOOR ---------- */
 
 const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshStandardMaterial({
-        color: 0x555555
-    })
+  new THREE.CircleGeometry(3,48),
+  new THREE.MeshStandardMaterial({
+    color:0x101510,
+    roughness:.9,
+    metalness:.05
+  })
 );
 
-floor.rotation.x = -Math.PI / 2;
+floor.rotation.x = -Math.PI/2;
+floor.position.y = 0;
 scene.add(floor);
 
-
-/* =====================================================
-   TEST CUBE
-===================================================== */
+/* ---------- TEST CUBE ---------- */
 
 const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshStandardMaterial({
-        color: 0x00ff88
-    })
+  new THREE.BoxGeometry(.18,.18,.18),
+  new THREE.MeshStandardMaterial({
+    color:0x00ff88,
+    emissive:0x003d18,
+    emissiveIntensity:1
+  })
 );
 
-cube.position.set(0, 0.5, -3);
+cube.position.set(0,1.35,-1);
 scene.add(cube);
 
-
-/* =====================================================
+/* =========================================================
    CONTROLLERS
-===================================================== */
+   ========================================================= */
 
-const controller0 =
-    renderer.xr.getController(0);
-
-const controller1 =
-    renderer.xr.getController(1);
+const controller0 = renderer.xr.getController(0);
+const controller1 = renderer.xr.getController(1);
 
 scene.add(controller0);
 scene.add(controller1);
 
-
-/* =====================================================
-   LASERS
-===================================================== */
-
 function addLaser(controller) {
 
-    const geometry =
-        new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(0, 0, -1)
-        ]);
+    const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0,0,0),
+        new THREE.Vector3(0,0,-1)
+    ]);
 
-    const material =
-        new THREE.LineBasicMaterial({
-            color: 0xffffff
-        });
+    const material = new THREE.LineBasicMaterial({
+        color: 0xffffff
+    });
 
-    const laser =
-        new THREE.Line(
-            geometry,
-            material
-        );
+    const laser = new THREE.Line(geometry, material);
 
     laser.scale.z = 5;
 
@@ -146,652 +125,652 @@ function addLaser(controller) {
 addLaser(controller0);
 addLaser(controller1);
 
+controller0.addEventListener("selectstart", () => {
+    cube.material.color.set(0xff0000);
+});
 
-/* =====================================================
+controller1.addEventListener("selectstart", () => {
+    cube.material.color.set(0xff0000);
+});
+
+controller0.addEventListener("selectend", () => {
+    cube.material.color.set(0x00ff88);
+});
+
+controller1.addEventListener("selectend", () => {
+    cube.material.color.set(0x00ff88);
+});
+
+/* =========================================================
    PORTAL GUN
-===================================================== */
+   ========================================================= */
 
 const gun = new THREE.Group();
 
+controller1.add(gun);
 
-/* =====================================================
-   MAIN THIN BODY
-===================================================== */
+/* ---------- MATERIALS ---------- */
+
+const black = new THREE.MeshStandardMaterial({
+  color:0x090b0a,
+  roughness:.42,
+  metalness:.68
+});
+
+const darkMetal = new THREE.MeshStandardMaterial({
+  color:0x171b18,
+  roughness:.3,
+  metalness:.82
+});
+
+const grayMetal = new THREE.MeshStandardMaterial({
+  color:0x414741,
+  roughness:.38,
+  metalness:.72
+});
+
+const lightMetal = new THREE.MeshStandardMaterial({
+  color:0x777d76,
+  roughness:.35,
+  metalness:.7
+});
+
+const rubber = new THREE.MeshStandardMaterial({
+  color:0x111312,
+  roughness:.78,
+  metalness:.12
+});
+
+const greenMat = new THREE.MeshStandardMaterial({
+  color:0x20ff43,
+  emissive:0x08ff24,
+  emissiveIntensity:3.2,
+  roughness:.2
+});
+
+const greenGlass = new THREE.MeshPhysicalMaterial({
+  color:0xbaffc7,
+  transparent:true,
+  opacity:.27,
+  roughness:.04,
+  transmission:.15,
+  thickness:.01,
+  depthWrite:false
+});
+
+const redMat = new THREE.MeshStandardMaterial({
+  color:0xff1010,
+  emissive:0xff0000,
+  emissiveIntensity:2
+});
+
+/* ---------- HELPERS ---------- */
+
+function box(parent,size,pos,material,rot={x:0,y:0,z:0}) {
+
+  const m = new THREE.Mesh(
+    new THREE.BoxGeometry(...size),
+    material
+  );
+
+  m.position.set(...pos);
+  m.rotation.set(rot.x,rot.y,rot.z);
+
+  parent.add(m);
+
+  return m;
+}
+
+function cyl(
+  parent,
+  radiusTop,
+  radiusBottom,
+  height,
+  pos,
+  material,
+  rot={x:0,y:0,z:0},
+  radial=16
+) {
+
+  const m = new THREE.Mesh(
+    new THREE.CylinderGeometry(
+      radiusTop,
+      radiusBottom,
+      height,
+      radial
+    ),
+    material
+  );
+
+  m.position.set(...pos);
+  m.rotation.set(rot.x,rot.y,rot.z);
+
+  parent.add(m);
+
+  return m;
+}
+
+/* =========================================================
+   MAIN BODY
+   ========================================================= */
+
+const bodyShape = new THREE.Shape();
+
+bodyShape.moveTo(-.18,-.045);
+bodyShape.lineTo(.10,-.045);
+bodyShape.lineTo(.18,.015);
+bodyShape.lineTo(.12,.065);
+bodyShape.lineTo(-.18,.065);
+bodyShape.closePath();
 
 const body = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.105,
-        0.075,
-        0.38
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0xd6d2c4,
-        roughness: 0.75
-    })
+  new THREE.ExtrudeGeometry(
+    bodyShape,
+    {
+      depth:.14,
+      bevelEnabled:true,
+      bevelSegments:2,
+      bevelSize:.012,
+      bevelThickness:.008
+    }
+  ),
+  black
 );
+
+body.rotation.y = -Math.PI/2;
+body.geometry.center();
 
 gun.add(body);
 
+/* ---------- UPPER SPINE ---------- */
 
-/* =====================================================
-   FRONT NOSE
-===================================================== */
-
-const nose = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-        0.052,
-        0.065,
-        0.11,
-        16
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0xbdb9ad,
-        roughness: 0.7
-    })
+box(
+  gun,
+  [.25,.035,.105],
+  [-.01,.065,0],
+  darkMetal
 );
 
-nose.rotation.x = Math.PI / 2;
+/* ---------- UNDERSIDE ---------- */
 
-nose.position.z = -0.245;
+box(
+  gun,
+  [.26,.025,.09],
+  [-.015,-.055,0],
+  black
+);
+
+/* =========================================================
+   FRONT BARREL
+   ========================================================= */
+
+const nose = new THREE.Group();
+
+nose.position.set(.18,0,0);
 
 gun.add(nose);
 
-
-/* =====================================================
-   DARK FRONT OPENING
-===================================================== */
-
-const opening = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-        0.035,
-        0.035,
-        0.012,
-        16
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x171717
-    })
+cyl(
+  nose,
+  .045,
+  .052,
+  .105,
+  [0,0,0],
+  darkMetal,
+  {x:0,y:0,z:Math.PI/2},
+  18
 );
 
-opening.rotation.x = Math.PI / 2;
-
-opening.position.z = -0.302;
-
-gun.add(opening);
-
-
-/* =====================================================
-   SMALL GREEN EMITTER
-===================================================== */
-
-const emitterGlow = new THREE.Mesh(
-    new THREE.SphereGeometry(
-        0.018,
-        12,
-        12
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x39ff55,
-        emissive: 0x12ff30,
-        emissiveIntensity: 3
-    })
+cyl(
+  nose,
+  .029,
+  .035,
+  .012,
+  [.057,0,0],
+  black,
+  {x:0,y:0,z:Math.PI/2},
+  18
 );
 
-emitterGlow.position.z = -0.31;
+const muzzleGlow = new THREE.Mesh(
+  new THREE.RingGeometry(.018,.030,24),
+  new THREE.MeshBasicMaterial({
+    color:0x101510,
+    side:THREE.DoubleSide
+  })
+);
 
-gun.add(emitterGlow);
+muzzleGlow.rotation.y = Math.PI/2;
+muzzleGlow.position.set(.064,0,0);
 
+nose.add(muzzleGlow);
 
-/* =====================================================
-   LONG TOP VIAL
-===================================================== */
-
-/*
-   The vial is LONG and narrow.
-*/
+/* =========================================================
+   LONG VERTICAL PLASMA TUBE
+   ========================================================= */
 
 const vial = new THREE.Group();
 
-vial.position.set(
-    0,
-    0.075,
-    0.015
-);
+/*
+   CylinderGeometry is vertical along local Y.
+   Rotation Z = 0 keeps the tube vertical.
+*/
 
-vial.rotation.z = Math.PI / 2;
+vial.position.set(-.005,.125,.015);
+vial.rotation.z = 0;
 
 gun.add(vial);
 
-
-/* Glass tube */
+/* ---------- GLASS ---------- */
 
 const glass = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-        0.035,
-        0.035,
-        0.24,
-        20
-    ),
-    new THREE.MeshPhysicalMaterial({
-        color: 0xbaffc7,
-        transparent: true,
-        opacity: 0.28,
-        roughness: 0.05,
-        transmission: 0.1,
-        depthWrite: false
-    })
+  new THREE.CylinderGeometry(
+    .035,
+    .035,
+    .24,
+    20
+  ),
+  greenGlass
 );
 
 vial.add(glass);
 
-
-/* =====================================================
-   GREEN ENERGY INSIDE VIAL
-===================================================== */
+/* ---------- PLASMA ---------- */
 
 const energy = new THREE.Mesh(
-    new THREE.SphereGeometry(
-        0.028,
-        16,
-        12
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x35ff4f,
-        emissive: 0x0cff25,
-        emissiveIntensity: 3
-    })
+  new THREE.SphereGeometry(.029,18,14),
+  greenMat
 );
 
-energy.position.set(
-    0,
-    0,
-    0
-);
+energy.position.set(0,0,0);
 
 vial.add(energy);
 
+/* ---------- PLASMA CORE ---------- */
 
-/* Energy core */
-
-const energyCore = new THREE.Mesh(
-    new THREE.SphereGeometry(
-        0.014,
-        12,
-        12
-    ),
-    new THREE.MeshBasicMaterial({
-        color: 0xcaffd0
-    })
+const plasmaCore = new THREE.Mesh(
+  new THREE.CylinderGeometry(
+    .018,
+    .018,
+    .20,
+    14
+  ),
+  greenMat
 );
 
-vial.add(energyCore);
+vial.add(plasmaCore);
 
+/* ---------- PLASMA BLOBS ---------- */
 
-/* =====================================================
-   VIAL CAPS
-===================================================== */
-
-const capMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x77756d,
-        metalness: 0.5,
-        roughness: 0.45
-    });
-
-
-const capFront = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-        0.043,
-        0.043,
-        0.025,
-        16
-    ),
-    capMaterial
+const blob1 = new THREE.Mesh(
+  new THREE.SphereGeometry(.021,14,10),
+  greenMat
 );
 
-capFront.position.x = -0.13;
+blob1.position.set(0,.055,0);
 
-vial.add(capFront);
+vial.add(blob1);
 
-
-const capBack = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-        0.043,
-        0.043,
-        0.025,
-        16
-    ),
-    capMaterial
+const blob2 = new THREE.Mesh(
+  new THREE.SphereGeometry(.017,14,10),
+  greenMat
 );
 
-capBack.position.x = 0.13;
+blob2.position.set(0,-.065,0);
 
-vial.add(capBack);
+vial.add(blob2);
 
+/* ---------- VIAL CAPS ---------- */
 
-/* =====================================================
+cyl(
+  vial,
+  .042,
+  .042,
+  .018,
+  [0,.13,0],
+  darkMetal
+);
+
+cyl(
+  vial,
+  .042,
+  .042,
+  .018,
+  [0,-.13,0],
+  darkMetal
+);
+
+cyl(
+  vial,
+  .028,
+  .028,
+  .008,
+  [0,.141,0],
+  lightMetal,
+  {},
+  12
+);
+
+cyl(
+  vial,
+  .028,
+  .028,
+  .008,
+  [0,-.141,0],
+  lightMetal,
+  {},
+  12
+);
+
+/* =========================================================
    SIDE CONTROL PANEL
-===================================================== */
+   ========================================================= */
 
-const sidePanel = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.018,
-        0.045,
-        0.17
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x44433f,
-        metalness: 0.3
-    })
+const panel = new THREE.Group();
+
+panel.position.set(-.055,.005,.075);
+
+gun.add(panel);
+
+box(
+  panel,
+  [.15,.075,.018],
+  [0,0,0],
+  darkMetal
 );
 
-sidePanel.position.set(
-    0.062,
-    0.005,
-    0.015
+box(
+  panel,
+  [.12,.045,.008],
+  [0,0,.014],
+  black
 );
 
-gun.add(sidePanel);
-
-
-/* =====================================================
-   BLACK DIAL
-===================================================== */
+/* ---------- DIAL ---------- */
 
 const dial = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-        0.026,
-        0.026,
-        0.018,
-        20
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x111111,
-        roughness: 0.45
-    })
+  new THREE.CylinderGeometry(
+    .027,
+    .027,
+    .012,
+    20
+  ),
+  black
 );
 
-dial.rotation.x = Math.PI / 2;
+dial.rotation.x = Math.PI/2;
+dial.position.set(.035,0,.027);
 
-dial.position.set(
-    0.06,
-    0.025,
-    -0.09
-);
-
-gun.add(dial);
-
-
-/* Dial center */
+panel.add(dial);
 
 const dialCenter = new THREE.Mesh(
-    new THREE.SphereGeometry(
-        0.009,
-        10,
-        10
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x777777
-    })
+  new THREE.CylinderGeometry(
+    .009,
+    .009,
+    .014,
+    16
+  ),
+  grayMetal
 );
 
-dialCenter.position.set(
-    0.06,
-    0.025,
-    -0.102
-);
+dialCenter.rotation.x = Math.PI/2;
+dialCenter.position.set(.035,0,.035);
 
-gun.add(dialCenter);
+panel.add(dialCenter);
 
+/* ---------- PANEL LIGHTS ---------- */
 
-/* =====================================================
-   RED DISPLAY
-===================================================== */
+for(let i=0;i<3;i++){
+
+  const led = new THREE.Mesh(
+    new THREE.BoxGeometry(.012,.009,.006),
+    i===1 ? greenMat : redMat
+  );
+
+  led.position.set(
+    -.04+i*.025,
+    0,
+    .018
+  );
+
+  panel.add(led);
+}
+
+/* =========================================================
+   C-137 DISPLAY
+   ========================================================= */
+
+function makeLabelTexture(text) {
+
+  const c = document.createElement("canvas");
+
+  c.width = 256;
+  c.height = 96;
+
+  const ctx = c.getContext("2d");
+
+  ctx.fillStyle = "#080808";
+  ctx.fillRect(0,0,256,96);
+
+  ctx.strokeStyle = "#444";
+  ctx.lineWidth = 5;
+  ctx.strokeRect(3,3,250,90);
+
+  ctx.font = "bold 55px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  ctx.fillStyle = "#ff1717";
+
+  ctx.fillText(text,128,50);
+
+  return new THREE.CanvasTexture(c);
+}
 
 const display = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.06,
-        0.028,
-        0.008
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x4d0909,
-        emissive: 0x330000,
-        emissiveIntensity: 1.5
-    })
+  new THREE.BoxGeometry(.095,.045,.012),
+  new THREE.MeshStandardMaterial({
+    map:makeLabelTexture("C-137"),
+    emissive:0x660000,
+    emissiveIntensity:1.5
+  })
 );
 
-display.position.set(
-    -0.01,
-    0.035,
-    -0.13
-);
+display.position.set(-.105,-.012,.078);
 
 gun.add(display);
 
-
-/* =====================================================
-   DISPLAY TEXT
-===================================================== */
-
-const canvas =
-    document.createElement("canvas");
-
-canvas.width = 256;
-canvas.height = 128;
-
-const ctx =
-    canvas.getContext("2d");
-
-ctx.fillStyle = "#250000";
-ctx.fillRect(
-    0,
-    0,
-    256,
-    128
-);
-
-ctx.fillStyle = "#ff3333";
-
-ctx.font =
-    "bold 62px Arial";
-
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-
-ctx.fillText(
-    "C-137",
-    128,
-    64
-);
-
-const displayTexture =
-    new THREE.CanvasTexture(canvas);
-
-const displayText = new THREE.Mesh(
-    new THREE.PlaneGeometry(
-        0.052,
-        0.026
-    ),
-    new THREE.MeshBasicMaterial({
-        map: displayTexture,
-        transparent: true
-    })
-);
-
-displayText.position.set(
-    -0.01,
-    0.035,
-    -0.136
-);
-
-gun.add(displayText);
-
-
-/* =====================================================
-   SIDE-MOUNTED HANDLE
-===================================================== */
-
-/*
-   The handle comes out from the SIDE/BOTTOM
-   and angles DOWN toward the user.
-*/
+/* =========================================================
+   ANGLED HANDLE
+   ========================================================= */
 
 const handle = new THREE.Group();
 
 handle.position.set(
-    -0.035,
-    -0.035,
-    0.055
+  -.055,
+  -.07,
+  .055
 );
 
 handle.rotation.z =
-    THREE.MathUtils.degToRad(-22);
+  THREE.MathUtils.degToRad(-22);
 
 gun.add(handle);
 
-
-/* Handle body */
-
-const handleBody = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.085,
-        0.20,
-        0.10
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x77766f,
-        roughness: 0.8
-    })
-);
-
-handleBody.position.y = -0.095;
-
-handleBody.rotation.x =
-    THREE.MathUtils.degToRad(-8);
-
-handle.add(handleBody);
-
-
-/* Dark grip */
+/* ---------- GRIP ---------- */
 
 const grip = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.075,
-        0.13,
-        0.085
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x383734,
-        roughness: 0.8
-    })
+  new THREE.BoxGeometry(.075,.22,.065),
+  rubber
 );
 
-grip.position.y = -0.17;
+grip.position.set(0,-.105,0);
+
+grip.rotation.z =
+  THREE.MathUtils.degToRad(7);
+
+grip.scale.set(.82,1,.9);
 
 handle.add(grip);
 
+/* ---------- GRIP RIDGES ---------- */
 
-/* =====================================================
-   HANDLE END
-===================================================== */
+for(let i=0;i<4;i++){
 
-const handleEnd = new THREE.Mesh(
-    new THREE.SphereGeometry(
-        0.043,
-        12,
-        10
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x292929
-    })
+  box(
+    handle,
+    [.067,.012,.072],
+    [0,-.035-i*.045,.004],
+    darkMetal,
+    {
+      x:0,
+      y:0,
+      z:THREE.MathUtils.degToRad(7)
+    }
+  );
+}
+
+/* ---------- TRIGGER GUARD ---------- */
+
+const guard = new THREE.Mesh(
+  new THREE.TorusGeometry(
+    .034,
+    .007,
+    8,
+    18,
+    Math.PI
+  ),
+  darkMetal
 );
 
-handleEnd.position.y = -0.235;
+guard.rotation.z = Math.PI/2;
+guard.position.set(0,-.02,0);
 
-handle.add(handleEnd);
+handle.add(guard);
 
+/* ---------- TRIGGER ---------- */
 
-/* =====================================================
-   SMALL MECHANICAL BLOCKS
-===================================================== */
-
-const mechMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x55534d,
-        metalness: 0.45,
-        roughness: 0.5
-    });
-
-
-const mech1 = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.025,
-        0.035,
-        0.055
-    ),
-    mechMaterial
+const trigger = box(
+  handle,
+  [.012,.045,.012],
+  [0,-.015,.025],
+  lightMetal
 );
 
-mech1.position.set(
-    -0.065,
-    0.005,
-    0.08
+trigger.rotation.z =
+  THREE.MathUtils.degToRad(-12);
+
+/* =========================================================
+   MECHANICAL SIDE BLOCKS
+   ========================================================= */
+
+box(
+  gun,
+  [.045,.08,.09],
+  [-.14,-.01,-.02],
+  darkMetal
 );
 
-gun.add(mech1);
-
-
-const mech2 = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.022,
-        0.025,
-        0.075
-    ),
-    mechMaterial
+box(
+  gun,
+  [.025,.055,.07],
+  [-.18,-.005,-.02],
+  grayMetal
 );
 
-mech2.position.set(
-    0.063,
-    -0.025,
-    0.105
+cyl(
+  gun,
+  .018,
+  .018,
+  .025,
+  [-.16,.045,.055],
+  black,
+  {x:Math.PI/2,y:0,z:0},
+  14
 );
 
-gun.add(mech2);
-
-
-/* =====================================================
-   RIGHT CONTROLLER
-===================================================== */
-
-controller1.add(gun);
-
-
-/* =====================================================
-   GUN SIZE
-===================================================== */
-
-gun.scale.set(
-    0.55,
-    0.55,
-    0.55
-);
-
-
-/* =====================================================
-   GUN POSITION
-===================================================== */
-
-gun.position.set(
-    0,
-    -0.025,
-    -0.07
-);
-
-
-/* =====================================================
-   GUN ROTATION
-===================================================== */
+/* =========================================================
+   GUN ORIENTATION
+   ========================================================= */
 
 gun.rotation.set(
-    0,
-    0,
-    0
+  0,
+  Math.PI,
+  0
 );
 
-
-/* =====================================================
-   BOTH CONTROLLERS — DO NOT CHANGE
-===================================================== */
-
-controller0.addEventListener(
-    "selectstart",
-    () => {
-
-        cube.material.color.set(
-            0xff0000
-        );
-
-    }
+gun.scale.set(
+  .55,
+  .55,
+  .55
 );
 
-controller1.addEventListener(
-    "selectstart",
-    () => {
-
-        cube.material.color.set(
-            0xff0000
-        );
-
-    }
+gun.position.set(
+  0,
+  -.025,
+  -.07
 );
 
-controller0.addEventListener(
-    "selectend",
-    () => {
-
-        cube.material.color.set(
-            0x00ff88
-        );
-
-    }
-);
-
-controller1.addEventListener(
-    "selectend",
-    () => {
-
-        cube.material.color.set(
-            0x00ff88
-        );
-
-    }
-);
-
-
-/* =====================================================
+/* =========================================================
    ANIMATION
-===================================================== */
+   ========================================================= */
 
 let time = 0;
 
-renderer.setAnimationLoop(() => {
+function animate() {
 
-    time += 0.03;
+  time += .016;
 
+  const pulse =
+    2.7 +
+    Math.sin(time*5.5)*1.1;
 
-    /* Green energy gently pulses */
+  greenMat.emissiveIntensity = pulse;
 
-    const pulse =
-        1 +
-        Math.sin(time * 4) * 0.12;
+  energy.scale.set(
+    1 + Math.sin(time*8)*.08,
+    1 + Math.sin(time*10)*.13,
+    1 + Math.sin(time*8)*.08
+  );
 
-    energy.scale.set(
-        pulse,
-        pulse,
-        pulse
-    );
+  plasmaCore.scale.y =
+    .88 +
+    Math.sin(time*7)*.10;
 
-    energy.rotation.y += 0.025;
+  blob1.position.y =
+    .055 +
+    Math.sin(time*4.5)*.012;
 
+  blob2.position.y =
+    -.065 +
+    Math.sin(time*5.2+1)*.012;
 
-    /* Energy core */
+  renderer.render(
+    scene,
+    camera
+  );
+}
 
-    energyCore.scale.set(
-        1 + Math.sin(time * 5) * 0.15,
-        1 + Math.sin(time * 5) * 0.15,
-        1 + Math.sin(time * 5) * 0.15
-    );
+renderer.setAnimationLoop(animate);
 
+/* =========================================================
+   RESIZE
+   ========================================================= */
 
-    renderer.render(
-        scene,
-        camera
-    );
+window.addEventListener("resize",()=>{
 
+  camera.aspect =
+    window.innerWidth /
+    window.innerHeight;
+
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+  );
 });
 
 </script>
-
 </body>
 </html>
