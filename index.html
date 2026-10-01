@@ -12,26 +12,10 @@
             overflow: hidden;
             background: black;
         }
-
-        #enterVR {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-
-            padding: 20px 30px;
-            font-size: 22px;
-
-            z-index: 10;
-        }
     </style>
 </head>
 
 <body>
-
-<button id="enterVR">
-    ENTER VR
-</button>
 
 <script type="module">
 
@@ -89,13 +73,13 @@ const renderer =
         antialias: true
     });
 
+renderer.setPixelRatio(
+    window.devicePixelRatio
+);
+
 renderer.setSize(
     window.innerWidth,
     window.innerHeight
-);
-
-renderer.setPixelRatio(
-    window.devicePixelRatio
 );
 
 renderer.xr.enabled = true;
@@ -170,97 +154,294 @@ scene.add(cube);
    CONTROLLERS
 ========================= */
 
-const rightController =
+const controller0 =
     renderer.xr.getController(0);
 
-const leftController =
+const controller1 =
     renderer.xr.getController(1);
 
-scene.add(
-    rightController
-);
-
-scene.add(
-    leftController
-);
+scene.add(controller0);
+scene.add(controller1);
 
 
 /* =========================
    CONTROLLER RAYS
 ========================= */
 
-const rayGeometry =
-    new THREE.BufferGeometry()
-        .setFromPoints([
+function makeRay() {
 
-            new THREE.Vector3(
-                0,
-                0,
-                0
-            ),
+    const geometry =
+        new THREE.BufferGeometry()
+            .setFromPoints([
 
-            new THREE.Vector3(
-                0,
-                0,
-                -1
-            )
+                new THREE.Vector3(
+                    0, 0, 0
+                ),
 
-        ]);
+                new THREE.Vector3(
+                    0, 0, -1
+                )
 
-const rayMaterial =
-    new THREE.LineBasicMaterial({
-        color: 0xffffff
-    });
+            ]);
+
+    const material =
+        new THREE.LineBasicMaterial({
+            color: 0xffffff
+        });
+
+    const ray =
+        new THREE.Line(
+            geometry,
+            material
+        );
+
+    ray.scale.z = 5;
+
+    return ray;
+}
 
 
-const rightRay =
-    new THREE.Line(
-        rayGeometry,
-        rayMaterial
-    );
-
-rightRay.scale.z = 5;
-
-rightController.add(
-    rightRay
+controller0.add(
+    makeRay()
 );
 
-
-const leftRay =
-    new THREE.Line(
-        rayGeometry.clone(),
-        rayMaterial
-    );
-
-leftRay.scale.z = 5;
-
-leftController.add(
-    leftRay
+controller1.add(
+    makeRay()
 );
 
 
 /* =========================
-   CONTROLLER BUTTON
+   FIND RIGHT / LEFT HAND
 ========================= */
 
-rightController.addEventListener(
-    "selectstart",
-    () => {
+let rightController = null;
+let leftController = null;
 
-        cube.material.color.set(
-            0xff0000
-        );
+
+function identifyControllers() {
+
+    const session =
+        renderer.xr.getSession();
+
+    if (!session) return;
+
+
+    for (
+        const source
+        of session.inputSources
+    ) {
+
+        if (
+            source.handedness === "right"
+        ) {
+
+            rightController =
+                source.targetRayMode === "tracked-pointer"
+                ? (
+                    source.gamepad
+                    ? getControllerForSource(source)
+                    : rightController
+                )
+                : rightController;
+        }
+
+
+        if (
+            source.handedness === "left"
+        ) {
+
+            leftController =
+                source.targetRayMode === "tracked-pointer"
+                ? (
+                    source.gamepad
+                    ? getControllerForSource(source)
+                    : leftController
+                )
+                : leftController;
+        }
+    }
+}
+
+
+/* =========================
+   MATCH INPUT SOURCE
+========================= */
+
+function getControllerForSource(source) {
+
+    /*
+       Three.js controller objects contain
+       the XR input source that created them.
+    */
+
+    if (
+        controller0.userData.inputSource === source
+    ) {
+
+        return controller0;
 
     }
+
+
+    if (
+        controller1.userData.inputSource === source
+    ) {
+
+        return controller1;
+
+    }
+
+
+    return null;
+}
+
+
+/* =========================
+   SELECT EVENTS
+========================= */
+
+function rightTriggerPressed() {
+
+    cube.material.color.set(
+        0xff0000
+    );
+
+}
+
+
+function rightTriggerReleased() {
+
+    cube.material.color.set(
+        0x00ff88
+    );
+
+}
+
+
+/*
+   We'll attach the event to BOTH
+   controllers temporarily.
+
+   The handler checks which one
+   is actually the right hand.
+*/
+
+function handleSelectStart(event) {
+
+    if (
+        event.target === rightController
+    ) {
+
+        rightTriggerPressed();
+
+    }
+
+}
+
+
+function handleSelectEnd(event) {
+
+    if (
+        event.target === rightController
+    ) {
+
+        rightTriggerReleased();
+
+    }
+
+}
+
+
+controller0.addEventListener(
+    "selectstart",
+    handleSelectStart
 );
 
-rightController.addEventListener(
+controller1.addEventListener(
+    "selectstart",
+    handleSelectStart
+);
+
+controller0.addEventListener(
     "selectend",
+    handleSelectEnd
+);
+
+controller1.addEventListener(
+    "selectend",
+    handleSelectEnd
+);
+
+
+/* =========================
+   XR SESSION START
+========================= */
+
+renderer.xr.addEventListener(
+    "sessionstart",
     () => {
 
-        cube.material.color.set(
-            0x00ff88
-        );
+        /*
+           Find which Three.js controller
+           corresponds to each hand.
+        */
+
+        const session =
+            renderer.xr.getSession();
+
+        for (
+            const source
+            of session.inputSources
+        ) {
+
+            if (
+                source.handedness === "right"
+            ) {
+
+                if (
+                    controller0.userData.inputSource === source
+                ) {
+
+                    rightController =
+                        controller0;
+
+                }
+                else if (
+                    controller1.userData.inputSource === source
+                ) {
+
+                    rightController =
+                        controller1;
+
+                }
+
+            }
+
+
+            if (
+                source.handedness === "left"
+            ) {
+
+                if (
+                    controller0.userData.inputSource === source
+                ) {
+
+                    leftController =
+                        controller0;
+
+                }
+                else if (
+                    controller1.userData.inputSource === source
+                ) {
+
+                    leftController =
+                        controller1;
+
+                }
+
+            }
+
+        }
 
     }
 );
