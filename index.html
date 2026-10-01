@@ -2,11 +2,15 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Quest Portal Gun</title>
+    <title>Rick Style Portal Gun</title>
     <style>
-        body { margin: 0; overflow: hidden; }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
     </style>
 </head>
+
 <body>
 
 <script type="module">
@@ -23,7 +27,10 @@ import { VRButton } from
 ========================= */
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x202020);
+
+scene.background =
+    new THREE.Color(0x202020);
+
 
 const camera = new THREE.PerspectiveCamera(
     70,
@@ -32,11 +39,17 @@ const camera = new THREE.PerspectiveCamera(
     100
 );
 
-const light = new THREE.HemisphereLight(
-    0xffffff,
-    0x444444,
-    3
-);
+
+/* =========================
+   LIGHT
+========================= */
+
+const light =
+    new THREE.HemisphereLight(
+        0xffffff,
+        0x444444,
+        3
+    );
 
 scene.add(light);
 
@@ -45,9 +58,10 @@ scene.add(light);
    VR
 ========================= */
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
 
 renderer.setSize(
     window.innerWidth,
@@ -56,7 +70,9 @@ renderer.setSize(
 
 renderer.xr.enabled = true;
 
-document.body.appendChild(renderer.domElement);
+document.body.appendChild(
+    renderer.domElement
+);
 
 document.body.appendChild(
     VRButton.createButton(renderer)
@@ -67,14 +83,16 @@ document.body.appendChild(
    FLOOR
 ========================= */
 
-const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshStandardMaterial({
-        color: 0x555555
-    })
-);
+const floor =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(10, 10),
+        new THREE.MeshStandardMaterial({
+            color: 0x555555
+        })
+    );
 
-floor.rotation.x = -Math.PI / 2;
+floor.rotation.x =
+    -Math.PI / 2;
 
 scene.add(floor);
 
@@ -83,12 +101,17 @@ scene.add(floor);
    TEST CUBE
 ========================= */
 
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshStandardMaterial({
-        color: 0x00ff88
-    })
-);
+const cube =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1,
+            1,
+            1
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x00ff88
+        })
+    );
 
 cube.position.set(
     0,
@@ -114,16 +137,17 @@ scene.add(controller1);
 
 
 /* =========================
-   CONTROLLER LASERS
+   LASERS
 ========================= */
 
 function addLaser(controller) {
 
     const geometry =
-        new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(0,0,0),
-            new THREE.Vector3(0,0,-1)
-        ]);
+        new THREE.BufferGeometry()
+            .setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 0, -1)
+            ]);
 
     const material =
         new THREE.LineBasicMaterial({
@@ -145,159 +169,294 @@ addLaser(controller0);
 addLaser(controller1);
 
 
+/* ==================================================
+   RICK-STYLE PORTAL GUN
+================================================== */
+
+const gun =
+    new THREE.Group();
+
+
 /* =========================
-   PORTAL GUN
+   MAIN BODY
 ========================= */
 
-const gun = new THREE.Group();
-
-
-/* Main body */
-
-const body = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.18,
-        0.22,
-        0.55
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0xe8e5d8
-    })
-);
+const body =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.11,
+            0.13,
+            0.34
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0xd8d2bd,
+            roughness: 0.8
+        })
+    );
 
 gun.add(body);
 
 
-/* Rounded-ish front barrel */
+/* =========================
+   TOP REAR HOUSING
+========================= */
 
-const barrel = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-        0.13,
-        0.16,
-        0.30,
-        16
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0xddddcc
-    })
+const topHousing =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.13,
+            0.07,
+            0.18
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0xaaa48f
+        })
+    );
+
+topHousing.position.set(
+    0,
+    0.09,
+    0.04
 );
 
-barrel.rotation.x = Math.PI / 2;
-
-barrel.position.z = -0.38;
-
-gun.add(barrel);
+gun.add(topHousing);
 
 
-/* Dark barrel center */
+/* =========================
+   FRONT EMITTER
+========================= */
 
-const barrelDark = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-        0.075,
-        0.075,
-        0.32,
-        16
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x333333
-    })
-);
+const emitter =
+    new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            0.075,
+            0.095,
+            0.18,
+            16
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0xbcb6a4
+        })
+    );
 
-barrelDark.rotation.x = Math.PI / 2;
+emitter.rotation.x =
+    Math.PI / 2;
 
-barrelDark.position.z = -0.39;
+emitter.position.z =
+    -0.25;
 
-gun.add(barrelDark);
-
-
-/* Blue energy ring */
-
-const blueRing = new THREE.Mesh(
-    new THREE.TorusGeometry(
-        0.09,
-        0.025,
-        8,
-        24
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x00aaff,
-        emissive: 0x0066ff,
-        emissiveIntensity: 3
-    })
-);
-
-blueRing.rotation.x = Math.PI / 2;
-
-blueRing.position.z = -0.56;
-
-gun.add(blueRing);
+gun.add(emitter);
 
 
-/* Grip */
+/* =========================
+   DARK INNER BARREL
+========================= */
 
-const grip = new THREE.Mesh(
-    new THREE.BoxGeometry(
-        0.15,
-        0.35,
-        0.16
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0x333333
-    })
-);
+const innerBarrel =
+    new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            0.042,
+            0.042,
+            0.19,
+            16
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x292929
+        })
+    );
+
+innerBarrel.rotation.x =
+    Math.PI / 2;
+
+innerBarrel.position.z =
+    -0.26;
+
+gun.add(innerBarrel);
+
+
+/* =========================
+   ENERGY RING
+========================= */
+
+const energyRing =
+    new THREE.Mesh(
+        new THREE.TorusGeometry(
+            0.058,
+            0.012,
+            8,
+            20
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x00aaff,
+            emissive: 0x0088ff,
+            emissiveIntensity: 3
+        })
+    );
+
+energyRing.rotation.x =
+    Math.PI / 2;
+
+energyRing.position.z =
+    -0.355;
+
+gun.add(energyRing);
+
+
+/* =========================
+   GRIP
+========================= */
+
+const grip =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.095,
+            0.23,
+            0.105
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x3b342c
+        })
+    );
 
 grip.position.set(
     0,
-    -0.25,
-    0.05
+    -0.16,
+    0.035
 );
 
-grip.rotation.x = -0.18;
+grip.rotation.x =
+    -0.15;
 
 gun.add(grip);
 
 
-/* Orange energy button */
+/* =========================
+   GRIP END
+========================= */
 
-const orange = new THREE.Mesh(
-    new THREE.SphereGeometry(
-        0.045,
-        12,
-        12
-    ),
-    new THREE.MeshStandardMaterial({
-        color: 0xff6600,
-        emissive: 0xff3300,
-        emissiveIntensity: 2
-    })
-);
+const gripBottom =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            0.055,
+            12,
+            8
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x292929
+        })
+    );
 
-orange.position.set(
+gripBottom.position.set(
     0,
-    0.04,
-    -0.22
+    -0.28,
+    0.01
 );
 
-gun.add(orange);
+gun.add(gripBottom);
 
 
 /* =========================
-   PUT GUN IN RIGHT HAND
+   SIDE MECHANICAL PART
 ========================= */
+
+const sidePart =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.025,
+            0.07,
+            0.16
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x383838
+        })
+    );
+
+sidePart.position.set(
+    0.065,
+    0.01,
+    -0.02
+);
+
+gun.add(sidePart);
+
+
+/* =========================
+   ORANGE ENERGY LIGHT
+========================= */
+
+const orangeLight =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            0.025,
+            10,
+            10
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0xff6600,
+            emissive: 0xff3300,
+            emissiveIntensity: 3
+        })
+    );
+
+orangeLight.position.set(
+    0,
+    0.025,
+    -0.17
+);
+
+gun.add(orangeLight);
+
+
+/* =========================
+   SMALL TOP BUTTON
+========================= */
+
+const button =
+    new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            0.018,
+            0.018,
+            0.025,
+            10
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x777777
+        })
+    );
+
+button.rotation.z =
+    Math.PI / 2;
+
+button.position.set(
+    0,
+    0.125,
+    0.02
+);
+
+gun.add(button);
+
+
+/* ==================================================
+   ATTACH TO RIGHT CONTROLLER
+================================================== */
 
 controller1.add(gun);
 
 
-/* Position gun in controller */
+/* =========================
+   GUN POSITION
+========================= */
 
 gun.position.set(
     0,
-    -0.05,
-    -0.12
+    -0.015,
+    -0.075
 );
 
 
-/* Rotate it so it points forward */
+/* =========================
+   GUN ROTATION
+========================= */
 
 gun.rotation.set(
     0,
@@ -307,8 +466,19 @@ gun.rotation.set(
 
 
 /* =========================
-   TRIGGERS
+   GUN SIZE
 ========================= */
+
+gun.scale.set(
+    0.72,
+    0.72,
+    0.72
+);
+
+
+/* ==================================================
+   BOTH CONTROLLERS
+================================================== */
 
 controller0.addEventListener(
     "selectstart",
@@ -320,6 +490,7 @@ controller0.addEventListener(
 
     }
 );
+
 
 controller1.addEventListener(
     "selectstart",
@@ -332,6 +503,7 @@ controller1.addEventListener(
     }
 );
 
+
 controller0.addEventListener(
     "selectend",
     () => {
@@ -342,6 +514,7 @@ controller0.addEventListener(
 
     }
 );
+
 
 controller1.addEventListener(
     "selectend",
@@ -356,17 +529,19 @@ controller1.addEventListener(
 
 
 /* =========================
-   RENDER
+   RENDER LOOP
 ========================= */
 
-renderer.setAnimationLoop(() => {
+renderer.setAnimationLoop(
+    () => {
 
-    renderer.render(
-        scene,
-        camera
-    );
+        renderer.render(
+            scene,
+            camera
+        );
 
-});
+    }
+);
 
 </script>
 
