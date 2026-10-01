@@ -2,15 +2,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Quest Portal Gun</title>
+    <title>Quest Controller Test</title>
 
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background: black;
         }
     </style>
 </head>
@@ -26,33 +23,20 @@ import { VRButton } from
 "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
 
 
-/* =========================
-   SCENE
-========================= */
-
 const scene = new THREE.Scene();
 
 scene.background =
     new THREE.Color(0x202020);
 
 
-/* =========================
-   CAMERA
-========================= */
-
 const camera =
     new THREE.PerspectiveCamera(
         70,
-        window.innerWidth /
-        window.innerHeight,
+        window.innerWidth / window.innerHeight,
         0.01,
         100
     );
 
-
-/* =========================
-   LIGHT
-========================= */
 
 const light =
     new THREE.HemisphereLight(
@@ -64,18 +48,10 @@ const light =
 scene.add(light);
 
 
-/* =========================
-   RENDERER
-========================= */
-
 const renderer =
     new THREE.WebGLRenderer({
         antialias: true
     });
-
-renderer.setPixelRatio(
-    window.devicePixelRatio
-);
 
 renderer.setSize(
     window.innerWidth,
@@ -88,57 +64,34 @@ document.body.appendChild(
     renderer.domElement
 );
 
-
-/* =========================
-   VR BUTTON
-========================= */
-
 document.body.appendChild(
     VRButton.createButton(renderer)
 );
 
 
-/* =========================
-   FLOOR
-========================= */
+/* FLOOR */
 
 const floor =
     new THREE.Mesh(
-
-        new THREE.PlaneGeometry(
-            10,
-            10
-        ),
-
+        new THREE.PlaneGeometry(10, 10),
         new THREE.MeshStandardMaterial({
             color: 0x555555
         })
-
     );
 
-floor.rotation.x =
-    -Math.PI / 2;
+floor.rotation.x = -Math.PI / 2;
 
 scene.add(floor);
 
 
-/* =========================
-   CUBE
-========================= */
+/* CUBE */
 
 const cube =
     new THREE.Mesh(
-
-        new THREE.BoxGeometry(
-            1,
-            1,
-            1
-        ),
-
+        new THREE.BoxGeometry(1, 1, 1),
         new THREE.MeshStandardMaterial({
             color: 0x00ff88
         })
-
     );
 
 cube.position.set(
@@ -150,9 +103,7 @@ cube.position.set(
 scene.add(cube);
 
 
-/* =========================
-   CONTROLLERS
-========================= */
+/* CONTROLLERS */
 
 const controller0 =
     renderer.xr.getController(0);
@@ -164,24 +115,15 @@ scene.add(controller0);
 scene.add(controller1);
 
 
-/* =========================
-   CONTROLLER RAYS
-========================= */
+/* LASERS */
 
-function makeRay() {
+function addLaser(controller) {
 
     const geometry =
         new THREE.BufferGeometry()
             .setFromPoints([
-
-                new THREE.Vector3(
-                    0, 0, 0
-                ),
-
-                new THREE.Vector3(
-                    0, 0, -1
-                )
-
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 0, -1)
             ]);
 
     const material =
@@ -189,299 +131,65 @@ function makeRay() {
             color: 0xffffff
         });
 
-    const ray =
+    const laser =
         new THREE.Line(
             geometry,
             material
         );
 
-    ray.scale.z = 5;
+    laser.scale.z = 5;
 
-    return ray;
+    controller.add(laser);
 }
 
-
-controller0.add(
-    makeRay()
-);
-
-controller1.add(
-    makeRay()
-);
-
-
-/* =========================
-   FIND RIGHT / LEFT HAND
-========================= */
-
-let rightController = null;
-let leftController = null;
-
-
-function identifyControllers() {
-
-    const session =
-        renderer.xr.getSession();
-
-    if (!session) return;
-
-
-    for (
-        const source
-        of session.inputSources
-    ) {
-
-        if (
-            source.handedness === "right"
-        ) {
-
-            rightController =
-                source.targetRayMode === "tracked-pointer"
-                ? (
-                    source.gamepad
-                    ? getControllerForSource(source)
-                    : rightController
-                )
-                : rightController;
-        }
-
-
-        if (
-            source.handedness === "left"
-        ) {
-
-            leftController =
-                source.targetRayMode === "tracked-pointer"
-                ? (
-                    source.gamepad
-                    ? getControllerForSource(source)
-                    : leftController
-                )
-                : leftController;
-        }
-    }
-}
-
-
-/* =========================
-   MATCH INPUT SOURCE
-========================= */
-
-function getControllerForSource(source) {
-
-    /*
-       Three.js controller objects contain
-       the XR input source that created them.
-    */
-
-    if (
-        controller0.userData.inputSource === source
-    ) {
-
-        return controller0;
-
-    }
-
-
-    if (
-        controller1.userData.inputSource === source
-    ) {
-
-        return controller1;
-
-    }
-
-
-    return null;
-}
-
-
-/* =========================
-   SELECT EVENTS
-========================= */
-
-function rightTriggerPressed() {
-
-    cube.material.color.set(
-        0xff0000
-    );
-
-}
-
-
-function rightTriggerReleased() {
-
-    cube.material.color.set(
-        0x00ff88
-    );
-
-}
+addLaser(controller0);
+addLaser(controller1);
 
 
 /*
-   We'll attach the event to BOTH
-   controllers temporarily.
+    TEMPORARY TEST
 
-   The handler checks which one
-   is actually the right hand.
+    Either controller trigger
+    should change the cube.
 */
 
-function handleSelectStart(event) {
-
-    if (
-        event.target === rightController
-    ) {
-
-        rightTriggerPressed();
-
-    }
-
-}
-
-
-function handleSelectEnd(event) {
-
-    if (
-        event.target === rightController
-    ) {
-
-        rightTriggerReleased();
-
-    }
-
-}
-
-
 controller0.addEventListener(
     "selectstart",
-    handleSelectStart
+    () => {
+        cube.material.color.set(0xff0000);
+    }
 );
 
 controller1.addEventListener(
     "selectstart",
-    handleSelectStart
+    () => {
+        cube.material.color.set(0xff0000);
+    }
 );
 
 controller0.addEventListener(
     "selectend",
-    handleSelectEnd
+    () => {
+        cube.material.color.set(0x00ff88);
+    }
 );
 
 controller1.addEventListener(
     "selectend",
-    handleSelectEnd
-);
-
-
-/* =========================
-   XR SESSION START
-========================= */
-
-renderer.xr.addEventListener(
-    "sessionstart",
     () => {
-
-        /*
-           Find which Three.js controller
-           corresponds to each hand.
-        */
-
-        const session =
-            renderer.xr.getSession();
-
-        for (
-            const source
-            of session.inputSources
-        ) {
-
-            if (
-                source.handedness === "right"
-            ) {
-
-                if (
-                    controller0.userData.inputSource === source
-                ) {
-
-                    rightController =
-                        controller0;
-
-                }
-                else if (
-                    controller1.userData.inputSource === source
-                ) {
-
-                    rightController =
-                        controller1;
-
-                }
-
-            }
-
-
-            if (
-                source.handedness === "left"
-            ) {
-
-                if (
-                    controller0.userData.inputSource === source
-                ) {
-
-                    leftController =
-                        controller0;
-
-                }
-                else if (
-                    controller1.userData.inputSource === source
-                ) {
-
-                    leftController =
-                        controller1;
-
-                }
-
-            }
-
-        }
-
+        cube.material.color.set(0x00ff88);
     }
 );
 
 
-/* =========================
-   RESIZE
-========================= */
-
-window.addEventListener(
-    "resize",
-    () => {
-
-        camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
-
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-
-    }
-);
-
-
-/* =========================
-   RENDER
-========================= */
+/* RENDER */
 
 renderer.setAnimationLoop(
     () => {
-
         renderer.render(
             scene,
             camera
         );
-
     }
 );
 
